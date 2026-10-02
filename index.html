@@ -151,15 +151,41 @@
         .modal-footer .btn-close-modal:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
         .modal-footer .btn-close-modal:active { transform: scale(0.95); }
 
-        .add-person-modal .modal-box { max-width: 500px; }
-        .add-person-modal .modal-body { padding: 2rem; }
-        .add-person-modal .field-group { margin-bottom: 1rem; }
-        .add-person-modal .btn-add-person { background: #10b981; border: none; padding: 0.8rem 2rem; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; transition: all 0.3s ease; width: 100%; font-size: 1rem; font-family: "Inter", "Segoe UI", Roboto, sans-serif; }
-        .add-person-modal .btn-add-person:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
-        .add-person-modal .btn-add-person:active { transform: scale(0.97); }
-        .add-person-modal .btn-add-person:disabled { opacity: 0.6; cursor: not-allowed; }
-        .add-person-modal .error-msg { color: #dc2626; font-size: 0.8rem; margin-top: 0.3rem; display: none; }
-        .add-person-modal .error-msg.show { display: block; }
+        /* ===== ACTION BUTTONS ===== */
+        .action-cell { display: flex; gap: 3px; flex-wrap: nowrap; }
+        .action-cell .btn-action { padding: 0.15rem 0.4rem; border: none; border-radius: 6px; font-size: 0.6rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; font-family: "Inter", "Segoe UI", Roboto, sans-serif; display: inline-flex; align-items: center; gap: 3px; }
+        .btn-action.btn-view { background: #8b5cf6; color: white; }
+        .btn-action.btn-view:hover { background: #7c3aed; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); transform: translateY(-2px) scale(1.05); }
+        .btn-action.btn-edit { background: #f59e0b; color: white; }
+        .btn-action.btn-edit:hover { background: #d97706; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); transform: translateY(-2px) scale(1.05); }
+        .btn-action.btn-delete { background: #ef4444; color: white; }
+        .btn-action.btn-delete:hover { background: #dc2626; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); transform: translateY(-2px) scale(1.05); }
+        .btn-action.btn-save-edit { background: #10b981; color: white; }
+        .btn-action.btn-save-edit:hover { background: #059669; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); transform: translateY(-2px) scale(1.05); }
+        .btn-action.btn-cancel-edit { background: #6b7280; color: white; }
+        .btn-action.btn-cancel-edit:hover { background: #4b5563; box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4); transform: translateY(-2px) scale(1.05); }
+        .btn-action:active { transform: scale(0.9); }
+        .btn-action .btn-spinner { display: none; width: 14px; height: 14px; border: 2px solid rgba(255, 255, 255, 0.2); border-top: 2px solid white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        .btn-action.loading .btn-spinner { display: inline-block; }
+        .btn-action.loading i { display: none; }
+        .btn-action.loading { opacity: 0.7; pointer-events: none; }
+
+        /* Editing row styles */
+        .editing-row td { background: #fef3c7 !important; }
+        .editing-row .action-cell .btn-action { display: none; }
+        .editing-row .action-cell .btn-save-edit, .editing-row .action-cell .btn-cancel-edit { display: inline-flex !important; }
+        .action-cell .btn-save-edit, .action-cell .btn-cancel-edit { display: none !important; }
+
+        .modal-body .editing td { background: #fef3c7 !important; }
+        .modal-body .editing input, .modal-body .editing select, .modal-body .editing textarea { background: white; border: 1.5px solid #f59e0b; border-radius: 4px; padding: 0.1rem 0.2rem; font-size: 0.65rem; width: 100%; outline: none; font-family: "Inter", "Segoe UI", Roboto, sans-serif; min-width: 50px; }
+        .modal-body .editing input:focus, .modal-body .editing select:focus, .modal-body .editing textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15); }
+
+        /* Fix for dropdowns in edit mode */
+        .modal-body table select { appearance: auto !important; -webkit-appearance: auto !important; -moz-appearance: auto !important; z-index: 100 !important; position: relative !important; overflow: visible !important; min-height: 28px !important; padding: 2px 6px !important; font-size: 0.65rem !important; background-color: white !important; border: 2px solid #f59e0b !important; border-radius: 4px !important; color: #0f172a !important; cursor: pointer !important; max-width: 130px !important; }
+        .modal-body table select option { display: block !important; padding: 4px 8px !important; min-height: 28px !important; height: auto !important; white-space: normal !important; word-wrap: break-word !important; background: white !important; color: #0f172a !important; font-size: 0.65rem !important; }
+        .modal-body table td { overflow: visible !important; position: relative !important; z-index: 1 !important; }
+        .modal-body table tr.editing-row td { overflow: visible !important; position: relative !important; z-index: 10 !important; }
+        .modal-body table tr.editing-row td select { z-index: 1000 !important; position: relative !important; min-height: 28px !important; }
 
         /* ===== CHART STYLES ===== */
         .chart-filters { display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; padding: 0.8rem 1rem; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; align-items: center; margin-bottom: 1rem; }
@@ -416,6 +442,23 @@
         <div class="modal-footer">
             <span class="record-count">Total: <span id="footerTotalCount">0</span> record(s)</span>
             <button class="btn-close-modal" id="closeModalBtn2">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== VIEW RECORD MODAL ===== -->
+<div class="modal-overlay" id="viewRecordModal">
+    <div class="modal-box" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-eye"></i> Record Details</h2>
+            <button class="close-btn" id="closeViewBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem;">
+            <div id="viewRecordContent"></div>
+        </div>
+        <div class="modal-footer">
+            <span class="record-count">📋 View Mode</span>
+            <button class="btn-close-modal" id="closeViewBtn2">Close</button>
         </div>
     </div>
 </div>
@@ -839,6 +882,13 @@
     }
 
     // ============================================
+    // STATE
+    // ============================================
+    let allRecords = [];
+    let filteredRecords = [];
+    let editingRowNumber = null;
+
+    // ============================================
     // FORM LOGIC
     // ============================================
     const hsProvince = document.getElementById('hs_province');
@@ -971,15 +1021,13 @@
     function closeRecordsModal() {
         recordsModal.classList.remove('active');
         document.body.style.overflow = 'auto';
+        editingRowNumber = null;
     }
 
     document.getElementById('closeModalBtn').addEventListener('click', closeRecordsModal);
     document.getElementById('closeModalBtn2').addEventListener('click', closeRecordsModal);
     recordsModal.addEventListener('click', function(e) {
         if (e.target === recordsModal) closeRecordsModal();
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeRecordsModal();
     });
 
     async function loadRecords() {
@@ -988,9 +1036,11 @@
             const response = await fetch(WEB_APP_URL + '?action=records&type=HOUSING_SUB', { method: 'GET' });
             const result = await response.json();
             if (result.result === 'success') {
-                const records = result.records || [];
-                renderTable(records);
-                footerTotalCount.textContent = records.length;
+                allRecords = result.records || [];
+                filteredRecords = [...allRecords];
+                renderTable(allRecords);
+                footerTotalCount.textContent = allRecords.length;
+                editingRowNumber = null;
             } else {
                 modalBodyContent.innerHTML = `<div style="text-align:center; padding: 2rem; color: #dc2626;">Error: ${result.message}</div>`;
             }
@@ -999,9 +1049,10 @@
         }
     }
 
+    // ===== RENDER TABLE WITH VIEW/EDIT/DELETE =====
     function renderTable(records) {
         if (!records || records.length === 0) {
-            modalBodyContent.innerHTML = `<table><thead><tr><th>#</th><th>PSGC</th><th>Region</th><th>Province</th><th>City/Municipality</th><th>Query/TA Details</th><th>Type of Assistance</th><th>Planned/Requested</th><th>Date Conducted</th><th>Reporting Month</th><th>Personnel</th></tr></thead><tbody><tr class="no-records"><td colspan="11">📭 No records found for T.A Housing Sub.</td></tr></tbody></table>`;
+            modalBodyContent.innerHTML = `<table><thead><tr><th>#</th><th>PSGC</th><th>Region</th><th>Province</th><th>City/Municipality</th><th>Query/TA Details</th><th>Type of Assistance</th><th>Planned/Requested</th><th>Date Conducted</th><th>Reporting Month</th><th>Personnel</th><th>Actions</th></tr></thead><tbody><tr class="no-records"><td colspan="12">📭 No records found for T.A Housing Sub.</td></tr></tbody></table>`;
             return;
         }
 
@@ -1020,23 +1071,297 @@
 
         let html = `<table><thead><tr><th>#</th>`;
         columns.forEach(col => html += `<th>${col.label}</th>`);
-        html += `</tr></thead><tbody>`;
+        html += `<th style="min-width: 90px;">Actions</th></tr></thead><tbody>`;
 
         records.forEach((record, index) => {
-            html += `<tr>`;
-            html += `<td style="text-align:center;">${index + 1}</td>`;
+            const rowNum = index + 1;
+            const actualRow = index + 2;
+            const isEditing = editingRowNumber === actualRow;
+
+            html += `<tr class="${isEditing ? 'editing-row' : ''}" data-row="${actualRow}">`;
+            html += `<td style="text-align:center;">${rowNum}</td>`;
+
             columns.forEach(col => {
                 let value = record[col.key] || '-';
-                if (col.key === 'Date Conducted') value = formatDate(value);
-                if (value.length > 25) value = value.substring(0, 25) + '…';
-                html += `<td>${value}</td>`;
+                if (col.key === 'Date Conducted') {
+                    value = formatDate(value);
+                }
+
+                if (isEditing) {
+                    const fieldName = col.key.replace(/ /g, '_').replace(/\//g, '_');
+                    
+                    if (col.key === 'Query/TA Details' || col.key === 'Remarks') {
+                        html += `<td><textarea name="${fieldName}" data-key="${col.key}" rows="1" style="width:100%; min-width:80px; max-width:150px; padding:0.1rem 0.2rem; border:2px solid #f59e0b; border-radius:4px; font-size:0.6rem; background:white;">${value}</textarea></td>`;
+                    } else if (col.key === 'Personnel In-Charge') {
+                        html += `<td style="padding:0.15rem 0.15rem; border-bottom:1px solid #f1f5f9; position:relative; overflow:visible; z-index:50;">
+                            <select name="${fieldName}" data-key="${col.key}" style="width:100%; min-width:80px; max-width:120px; padding:0.15rem 0.3rem; border:2px solid #f59e0b; border-radius:4px; font-size:0.6rem; background:white; font-family:'Inter',sans-serif; cursor:pointer; appearance:auto; -webkit-appearance:auto; z-index:1000; position:relative;">
+                                <option value="">Select...</option>`;
+                        picNames.forEach(name => {
+                            const selected = name === value ? 'selected' : '';
+                            html += `<option value="${name}" ${selected}>${name}</option>`;
+                        });
+                        html += `</select></td>`;
+                    } else if (col.key === 'Planned / Requested') {
+                        html += `<td style="padding:0.15rem 0.15rem; border-bottom:1px solid #f1f5f9; position:relative; overflow:visible; z-index:50;">
+                            <select name="${fieldName}" data-key="${col.key}" style="width:100%; min-width:70px; max-width:100px; padding:0.15rem 0.3rem; border:2px solid #f59e0b; border-radius:4px; font-size:0.6rem; background:white; font-family:'Inter',sans-serif; cursor:pointer; appearance:auto; -webkit-appearance:auto; z-index:1000; position:relative;">
+                                <option value="Planned" ${value === 'Planned' ? 'selected' : ''}>Planned</option>
+                                <option value="Requested" ${value === 'Requested' ? 'selected' : ''}>Requested</option>
+                            </select></td>`;
+                    } else if (col.key === 'Reporting Month') {
+                        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                        html += `<td style="padding:0.15rem 0.15rem; border-bottom:1px solid #f1f5f9; position:relative; overflow:visible; z-index:50;">
+                            <select name="${fieldName}" data-key="${col.key}" style="width:100%; min-width:70px; max-width:100px; padding:0.15rem 0.3rem; border:2px solid #f59e0b; border-radius:4px; font-size:0.6rem; background:white; font-family:'Inter',sans-serif; cursor:pointer; appearance:auto; -webkit-appearance:auto; z-index:1000; position:relative;">`;
+                        months.forEach(m => {
+                            html += `<option value="${m}" ${m === value ? 'selected' : ''}>${m}</option>`;
+                        });
+                        html += `</select></td>`;
+                    } else if (col.key === 'Date Conducted') {
+                        let dateValue = value;
+                        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)) {
+                            const parts = dateValue.split('/');
+                            dateValue = parts[2] + '-' + parts[0] + '-' + parts[1];
+                        }
+                        html += `<td style="padding:0.15rem 0.15rem; border-bottom:1px solid #f1f5f9;">
+                            <input type="date" name="${fieldName}" data-key="${col.key}" value="${dateValue}" style="width:100%; min-width:70px; max-width:95px; padding:0.1rem 0.2rem; border:2px solid #f59e0b; border-radius:4px; font-size:0.6rem; background:white;">
+                        </td>`;
+                    } else if (col.key === 'Type of Assistance Provided') {
+                        const assistanceTypes = [
+                            'Assistance through online platform, telephone, and letter queries',
+                            'Assistance through on-field mentoring and coaching',
+                            'Assistance through the provision of orientations/briefings'
+                        ];
+                        html += `<td style="padding:0.15rem 0.15rem; border-bottom:1px solid #f1f5f9; position:relative; overflow:visible; z-index:50;">
+                            <select name="${fieldName}" data-key="${col.key}" style="width:100%; min-width:100px; max-width:160px; padding:0.15rem 0.3rem; border:2px solid #f59e0b; border-radius:4px; font-size:0.6rem; background:white; font-family:'Inter',sans-serif; cursor:pointer; appearance:auto; -webkit-appearance:auto; z-index:1000; position:relative;">
+                                <option value="">Select Type...</option>`;
+                        assistanceTypes.forEach(type => {
+                            html += `<option value="${type}" ${type === value ? 'selected' : ''}>${type}</option>`;
+                        });
+                        html += `</select></td>`;
+                    } else {
+                        html += `<td style="padding:0.15rem 0.15rem; border-bottom:1px solid #f1f5f9;">
+                            <input type="text" name="${fieldName}" data-key="${col.key}" value="${value}" style="width:100%; min-width:50px; max-width:130px; padding:0.1rem 0.2rem; border:2px solid #f59e0b; border-radius:4px; font-size:0.6rem; background:white;">
+                        </td>`;
+                    }
+                } else {
+                    if (value.length > 25) {
+                        value = value.substring(0, 25) + '…';
+                    }
+                    html += `<td style="padding:0.3rem 0.3rem; border-bottom:1px solid #f1f5f9; color:#334155; font-size:0.65rem; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${value}</td>`;
+                }
             });
+
+            html += `<td class="action-cell" style="padding:0.2rem 0.2rem; border-bottom:1px solid #f1f5f9; white-space:nowrap;">`;
+            if (isEditing) {
+                html += `<button class="btn-action btn-save-edit" onclick="saveEditRow(${actualRow})" id="saveBtn_${actualRow}"><i class="fas fa-save"></i><span class="btn-spinner"></span></button>`;
+                html += `<button class="btn-action btn-cancel-edit" onclick="cancelEditRow()"><i class="fas fa-times"></i></button>`;
+            } else {
+                html += `<button class="btn-action btn-view" onclick="viewRecord(${actualRow})" title="View"><i class="fas fa-eye"></i></button>`;
+                html += `<button class="btn-action btn-edit" onclick="startEditRow(${actualRow})" title="Edit"><i class="fas fa-pen"></i></button>`;
+                html += `<button class="btn-action btn-delete" onclick="deleteRecord(${actualRow})" id="deleteBtn_${actualRow}" title="Delete"><i class="fas fa-trash"></i><span class="btn-spinner"></span></button>`;
+            }
+            html += `</td>`;
             html += `</tr>`;
         });
 
         html += `</tbody></table>`;
         modalBodyContent.innerHTML = html;
     }
+
+    // ============================================
+    // VIEW RECORD MODAL
+    // ============================================
+    const viewRecordModal = document.getElementById('viewRecordModal');
+    const viewRecordContent = document.getElementById('viewRecordContent');
+
+    window.viewRecord = function(rowNumber) {
+        const recordIndex = rowNumber - 2;
+        if (recordIndex < 0 || recordIndex >= filteredRecords.length) {
+            showToast('❌ Error', 'Record not found.', 'error');
+            return;
+        }
+        const record = filteredRecords[recordIndex];
+
+        let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">';
+        const fields = [
+            { key: 'PSGC', label: 'PSGC', icon: 'fa-hashtag' },
+            { key: 'Region', label: 'Region', icon: 'fa-map-pin' },
+            { key: 'Province', label: 'Province', icon: 'fa-landmark' },
+            { key: 'City/Municipality', label: 'City/Municipality', icon: 'fa-city' },
+            { key: 'Planned / Requested', label: 'Planned/Requested', icon: 'fa-clock' },
+            { key: 'Date Conducted', label: 'Date Conducted', icon: 'fa-calendar-alt' },
+            { key: 'Reporting Month', label: 'Reporting Month', icon: 'fa-calendar-check' },
+            { key: 'Personnel In-Charge', label: 'Personnel', icon: 'fa-user' }
+        ];
+
+        fields.forEach(field => {
+            let value = record[field.key] || '-';
+            if (field.key === 'Date Conducted') {
+                value = formatDate(value);
+            }
+            if (value.length > 40) value = value.substring(0, 40) + '…';
+            html += `<div style="background: #f8fafc; padding: 0.6rem 0.8rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <div style="font-size: 0.6rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.3px; display: flex; align-items: center; gap: 4px;">
+                    <i class="fas ${field.icon}" style="color: #2563eb; font-size: 0.55rem;"></i> ${field.label}
+                </div>
+                <div style="font-size: 0.85rem; color: #0f172a; margin-top: 2px; word-break: break-word;">${value}</div>
+            </div>`;
+        });
+
+        // Full-width fields
+        const fullFields = [
+            { key: 'Query/TA Details', label: 'Query / TA Details', icon: 'fa-quote-right' },
+            { key: 'Type of Assistance Provided', label: 'Type of Assistance Provided', icon: 'fa-headset' },
+            { key: 'Remarks', label: 'Remarks', icon: 'fa-pencil-alt' },
+            { key: 'Link to MOV', label: 'Link to MOV', icon: 'fa-link' }
+        ];
+
+        fullFields.forEach(field => {
+            let value = record[field.key] || '-';
+            if (value.length > 200) value = value.substring(0, 200) + '…';
+            html += `</div><div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-top: 0.5rem;">`;
+            html += `<div style="background: #f8fafc; padding: 0.6rem 0.8rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <div style="font-size: 0.6rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.3px; display: flex; align-items: center; gap: 4px;">
+                    <i class="fas ${field.icon}" style="color: #2563eb; font-size: 0.55rem;"></i> ${field.label}
+                </div>
+                <div style="font-size: 0.85rem; color: #0f172a; margin-top: 2px; word-break: break-word; white-space: pre-wrap;">${value}</div>
+            </div>`;
+        });
+
+        html += '</div>';
+        viewRecordContent.innerHTML = html;
+        viewRecordModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    function closeViewModal() {
+        viewRecordModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    document.getElementById('closeViewBtn').addEventListener('click', closeViewModal);
+    document.getElementById('closeViewBtn2').addEventListener('click', closeViewModal);
+    viewRecordModal.addEventListener('click', function(e) {
+        if (e.target === viewRecordModal) closeViewModal();
+    });
+
+    // ============================================
+    // EDIT / DELETE ACTIONS
+    // ============================================
+    window.startEditRow = function(rowNumber) {
+        editingRowNumber = rowNumber;
+        renderTable(filteredRecords);
+    };
+
+    window.cancelEditRow = function() {
+        editingRowNumber = null;
+        renderTable(filteredRecords);
+    };
+
+    window.saveEditRow = async function(rowNumber) {
+        const saveBtn = document.getElementById(`saveBtn_${rowNumber}`);
+        if (saveBtn) {
+            saveBtn.classList.add('loading');
+            saveBtn.disabled = true;
+        }
+
+        const row = document.querySelector(`tr[data-row="${rowNumber}"]`);
+        if (!row) {
+            showToast('❌ Error', 'Row not found.', 'error');
+            if (saveBtn) { saveBtn.classList.remove('loading'); saveBtn.disabled = false; }
+            return;
+        }
+
+        const inputs = row.querySelectorAll('input, select, textarea');
+        const updatedData = {};
+        inputs.forEach(input => {
+            const key = input.dataset.key;
+            if (key) {
+                updatedData[key] = input.value;
+            }
+        });
+
+        const recordIndex = rowNumber - 2;
+        if (recordIndex < 0 || recordIndex >= filteredRecords.length) {
+            showToast('❌ Error', 'Record not found.', 'error');
+            if (saveBtn) { saveBtn.classList.remove('loading'); saveBtn.disabled = false; }
+            return;
+        }
+        const originalRecord = filteredRecords[recordIndex];
+
+        const payload = {
+            action: 'updateRecord',
+            rowNumber: rowNumber,
+            formType: 'HOUSING_SUB',
+            data: {
+                psgc: updatedData['PSGC'] || originalRecord['PSGC'] || '',
+                region: updatedData['Region'] || originalRecord['Region'] || '',
+                province: updatedData['Province'] || originalRecord['Province'] || '',
+                cityMun: updatedData['City/Municipality'] || originalRecord['City/Municipality'] || '',
+                queryDetails: updatedData['Query/TA Details'] || originalRecord['Query/TA Details'] || '',
+                assistanceType: updatedData['Type of Assistance Provided'] || originalRecord['Type of Assistance Provided'] || '',
+                plannedRequested: updatedData['Planned / Requested'] || originalRecord['Planned / Requested'] || '',
+                dateConducted: updatedData['Date Conducted'] || originalRecord['Date Conducted'] || '',
+                reportingMonth: updatedData['Reporting Month'] || originalRecord['Reporting Month'] || '',
+                remarks: updatedData['Remarks'] || originalRecord['Remarks'] || 'N/A',
+                linkMov: updatedData['Link to MOV'] || originalRecord['Link to MOV'] || '',
+                personnelInCharge: updatedData['Personnel In-Charge'] || originalRecord['Personnel In-Charge'] || ''
+            }
+        };
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            showToast('✅ Success', 'Record updated successfully!', 'success');
+            editingRowNumber = null;
+            await loadRecords();
+        } catch (error) {
+            showToast('❌ Error', 'Failed to update record: ' + error.message, 'error');
+        } finally {
+            if (saveBtn) {
+                saveBtn.classList.remove('loading');
+                saveBtn.disabled = false;
+            }
+        }
+    };
+
+    window.deleteRecord = async function(rowNumber) {
+        if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+            return;
+        }
+
+        const deleteBtn = document.getElementById(`deleteBtn_${rowNumber}`);
+        if (deleteBtn) {
+            deleteBtn.classList.add('loading');
+            deleteBtn.disabled = true;
+        }
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'deleteRecord',
+                    rowNumber: rowNumber,
+                    formType: 'HOUSING_SUB'
+                })
+            });
+            showToast('🗑️ Deleted', 'Record deleted successfully!', 'success');
+            editingRowNumber = null;
+            await loadRecords();
+        } catch (error) {
+            showToast('❌ Error', 'Failed to delete record: ' + error.message, 'error');
+        } finally {
+            if (deleteBtn) {
+                deleteBtn.classList.remove('loading');
+                deleteBtn.disabled = false;
+            }
+        }
+    };
 
     // ============================================
     // CHART MODAL
@@ -1202,7 +1527,6 @@
         const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#6366f1'];
         const backgroundColors = labels.map((_, i) => colors[i % colors.length]);
 
-        // Dynamic height: at least 480px, grows with number of items
         const dynamicHeight = Math.max(480, labels.length * 55 + 120);
 
         container.innerHTML = `<div class="chart-container" style="height:${dynamicHeight}px;"><canvas id="chartCanvas"></canvas></div>`;
@@ -1210,7 +1534,6 @@
 
         if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
 
-        // Truncated axis labels but keep full in tooltip
         const axisLabels = labels.map(l => shortLabel(l, 45));
         const fullLabels = labels;
 
@@ -1248,7 +1571,6 @@
                     tooltip: {
                         callbacks: {
                             title: function(context) {
-                                // Show the FULL label on hover
                                 return fullLabels[context[0].dataIndex];
                             },
                             label: function(context) {
