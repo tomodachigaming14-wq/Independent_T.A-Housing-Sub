@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T.A Housing Sub. | Technical Assistance</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ===== BASE STYLES ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Inter", "Segoe UI", Roboto, sans-serif; }
+        body { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem 1.5rem; background: #f4f7fc; position: relative; }
+        body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 20% 50%, rgba(26, 115, 232, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, rgba(0, 200, 150, 0.06) 0%, transparent 60%), linear-gradient(145deg, #f0f4f8 0%, #e8edf3 100%); z-index: 0; }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; max-width: 400px; width: 100%; pointer-events: none; }
+        .toast { pointer-events: auto; background: white; border-radius: 16px; padding: 1rem 1.5rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 14px; transform: translateX(120%); animation: slideIn 0.5s ease forwards; border-left: 5px solid #2563eb; min-height: 60px; }
+        .toast.hiding { animation: slideOut 0.4s ease forwards; }
+        .toast-success { border-left-color: #10b981; }
+        .toast-error { border-left-color: #ef4444; }
+        .toast-info { border-left-color: #2563eb; }
+        .toast-warning { border-left-color: #f59e0b; }
+        .toast-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .toast-success .toast-icon { background: #d1fae5; color: #059669; }
+        .toast-error .toast-icon { background: #fee2e2; color: #dc2626; }
+        .toast-info .toast-icon { background: #dbeafe; color: #2563eb; }
+        .toast-warning .toast-icon { background: #fef3c7; color: #d97706; }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: 700; font-size: 0.9rem; color: #0f172a; }
+        .toast-message { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+        .toast-close { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; padding: 4px; transition: color 0.3s ease; flex-shrink: 0; }
+        .toast-close:hover { color: #475569; }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+
+        /* ===== LOADING OVERLAY ===== */
+        #loadingOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f4f7fc; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 1.2s ease, visibility 1.2s ease; }
+        #loadingOverlay.hidden { opacity: 0; visibility: hidden; }
+        .loading-logo { position: relative; width: 200px; height: 200px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; }
+        .loading-logo .ring-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; animation: pulseLogo 2s ease-in-out infinite; }
+        .loading-logo .ring { fill: none; stroke: #1a73e8; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 300; stroke-dashoffset: 300; animation: drawRing 2.5s ease-in-out infinite; }
+        .loading-logo .ring:nth-child(2) { stroke: #00c896; stroke-dasharray: 250; stroke-dashoffset: 250; animation-delay: 0.5s; }
+        .loading-logo .ring:nth-child(3) { stroke: #ffb347; stroke-dasharray: 200; stroke-dashoffset: 200; animation-delay: 1s; }
+        .loading-logo .logo-image { position: relative; z-index: 2; width: 80px; height: auto; border-radius: 12px; object-fit: contain; filter: drop-shadow(0 4px 20px rgba(26, 115, 232, 0.3)); }
+        @keyframes drawRing { 0% { stroke-dashoffset: 300; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -300; } }
+        @keyframes pulseLogo { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        .loading-text { color: #334155; font-size: 1.1rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 300; animation: fadeText 1.5s ease-in-out infinite; }
+        .loading-text span { color: #1a73e8; font-weight: 600; }
+        .loading-dots { display: inline-block; margin-left: 5px; }
+        .loading-dots span { display: inline-block; width: 8px; height: 8px; background: #1a73e8; border-radius: 50%; margin: 0 3px; animation: dotBounce 1.4s ease-in-out infinite both; }
+        .loading-dots span:nth-child(1) { animation-delay: 0s; }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dotBounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1.2); opacity: 1; } }
+        @keyframes fadeText { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        .loading-progress { width: 200px; height: 2px; background: rgba(0, 0, 0, 0.1); border-radius: 4px; margin-top: 30px; overflow: hidden; }
+        .loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #1a73e8, #00c896); border-radius: 4px; animation: progressLoad 3s ease-in-out forwards; }
+        @keyframes progressLoad { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* ===== CARD ===== */
+        .card { max-width: 880px; width: 100%; background: white; border-radius: 28px; padding: 2.5rem 3rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); position: relative; z-index: 1; opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+        .card.visible { opacity: 1; transform: translateY(0); }
+        .header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 1.5rem; margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; gap: 1rem; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-icon { width: 52px; height: 52px; background: linear-gradient(135deg, #1e3a8a, #2563eb); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: white; box-shadow: 0 8px 24px rgba(26, 115, 232, 0.3); }
+        .header h1 { font-size: 1.6rem; font-weight: 700; color: #1e3a8a; letter-spacing: -0.5px; }
+        .header h1 small { display: block; font-size: 0.7rem; font-weight: 400; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+        .header-badge { background: rgba(0, 200, 150, 0.15); border: 1px solid rgba(0, 200, 150, 0.2); padding: 0.4rem 1rem; border-radius: 40px; color: #00c896; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem 1.8rem; }
+        .full-width { grid-column: 1 / -1; }
+        .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .field-group label { font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; color: #334155; display: flex; align-items: center; gap: 8px; }
+        .field-group label i { color: #2563eb; font-size: 0.75rem; width: 16px; }
+        .field-group label .required { color: #dc2626; font-size: 0.6rem; }
+        .field-group input:read-only { background: #f1f5f9; cursor: not-allowed; color: #475569; }
+        .field-group input, .field-group select, .field-group textarea { background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 16px; padding: 0.75rem 1.1rem; font-size: 0.9rem; transition: all 0.25s ease; outline: none; width: 100%; color: #0f172a; font-weight: 400; font-family: "Inter", "Segoe UI", Roboto, sans-serif; }
+        .field-group input:focus, .field-group select:focus, .field-group textarea:focus { border-color: #2563eb; background: #ffffff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        .field-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23475569' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; cursor: pointer; color: #0f172a; min-height: 50px; }
+        .field-group select option { background: #ffffff; color: #0f172a; white-space: normal !important; word-wrap: break-word !important; padding: 6px 12px !important; line-height: 1.4 !important; min-height: 30px !important; height: auto !important; }
+        .field-group textarea { resize: vertical; min-height: 60px; }
+        .pic-container { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .pic-container select { flex: 1; min-width: 200px; }
+        .pic-btn { padding: 0.5rem 1rem; border: none; border-radius: 12px; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 6px; font-family: "Inter", "Segoe UI", Roboto, sans-serif; white-space: nowrap; }
+        .pic-btn-add { background: #10b981; color: white; }
+        .pic-btn-add:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .pic-btn-add:active { transform: scale(0.95); }
+        .pic-btn-delete { background: #ef4444; color: white; }
+        .pic-btn-delete:hover { background: #dc2626; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+        .pic-btn-delete:active { transform: scale(0.95); }
+        .pic-btn i { font-size: 0.7rem; }
+        .btn-submit { background: linear-gradient(135deg, #2563eb, #1e3a8a); border: none; padding: 1rem 2rem; border-radius: 60px; font-weight: 700; font-size: 1rem; color: white; display: inline-flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: all 0.3s ease; width: 100%; margin-top: 1.2rem; letter-spacing: 0.5px; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25); position: relative; overflow: hidden; font-family: "Inter", "Segoe UI", Roboto, sans-serif; }
+        .btn-submit::before { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent); transition: left 0.6s ease; }
+        .btn-submit:hover::before { left: 100%; }
+        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4); }
+        .btn-submit:active { transform: scale(0.97); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        .btn-test { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 40px; color: #475569; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all 0.3s ease; flex: 1; font-family: "Inter", "Segoe UI", Roboto, sans-serif; }
+        .btn-test:hover { background: #e2e8f0; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+        .btn-test:active { transform: scale(0.97); }
+        .btn-test i { margin-right: 4px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-view-all { background: #1e3a8a; border: 1px solid #1e3a8a; color: white; }
+        .btn-view-all:hover { background: #2563eb; border-color: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3); }
+        .btn-chart { background: #059669; border: 1px solid #059669; color: white; }
+        .btn-chart:hover { background: #047857; border-color: #047857; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); }
+        .btn-sheet { background: #0f9d58; border: 1px solid #0f9d58; color: white; }
+        .btn-sheet:hover { background: #0b7e48; border-color: #0b7e48; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15, 157, 88, 0.3); }
+        .status-message { margin-top: 1.2rem; padding: 0.8rem 1.2rem; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; font-size: 0.85rem; min-height: 52px; }
+        .status-message i { font-size: 1rem; color: #2563eb; flex-shrink: 0; }
+        .status-message.success { background: #f0fdf4; border-color: #86efac; color: #166534; }
+        .status-message.success i { color: #10b981; }
+        .status-message.error { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+        .status-message.error i { color: #dc2626; }
+        .footer-note { margin-top: 1.5rem; font-size: 0.65rem; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 1.2rem; letter-spacing: 0.5px; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.15); border-top: 2px solid white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .logo-image { height: 50px; width: auto; display: block; }
+        .header-icon, .header-logo { display: flex; align-items: center; }
+
+        /* ===== MODAL STYLES ===== */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 99999; justify-content: center; align-items: center; padding: 1rem; animation: fadeIn 0.3s ease; }
+        .modal-overlay.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-box { background: white; border-radius: 24px; max-width: 95vw; width: 100%; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); animation: slideUp 0.3s ease; overflow: hidden; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; gap: 0.5rem; flex-shrink: 0; }
+        .modal-header h2 { font-size: 1.1rem; font-weight: 700; color: #1e3a8a; display: flex; align-items: center; gap: 8px; }
+        .modal-header h2 i { color: #2563eb; }
+        .modal-header .close-btn { background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; color: #475569; }
+        .modal-header .close-btn:hover { background: #fee2e2; color: #dc2626; transform: rotate(90deg); }
+
+        .modal-body { padding: 0 1.5rem; overflow: visible; flex: 1; display: flex; flex-direction: column; }
+        .modal-body table { width: 100%; border-collapse: collapse; font-size: 0.7rem; min-width: 1000px; }
+        .modal-body table th { background: #f1f5f9; color: #1e3a8a; font-weight: 700; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.3px; padding: 0.4rem 0.3rem; text-align: left; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 10; white-space: nowrap; }
+        .modal-body table td { padding: 0.3rem 0.3rem; border-bottom: 1px solid #f1f5f9; color: #334155; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .modal-body table tr:hover td { background: #f8fafc; }
+        .modal-body table .no-records td { text-align: center; padding: 2rem 0; color: #94a3b8; font-size: 0.9rem; }
+
+        .table-wrapper { overflow: auto; flex: 1; padding: 0.5rem 0; position: relative; max-height: calc(92vh - 250px); min-height: 200px; }
+        .table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
+        .table-wrapper::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .table-wrapper::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .modal-footer { padding: 0.8rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; background: #f8fafc; border-radius: 0 0 24px 24px; flex-shrink: 0; }
+        .modal-footer .record-count { font-size: 0.8rem; color: #475569; }
+        .modal-footer .record-count span { font-weight: 700; color: #1e3a8a; }
+        .modal-footer .btn-close-modal { background: #2563eb; border: none; padding: 0.4rem 1.2rem; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.8rem; }
+        .modal-footer .btn-close-modal:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+        .modal-footer .btn-close-modal:active { transform: scale(0.95); }
+
+        .add-person-modal .modal-box { max-width: 500px; }
+        .add-person-modal .modal-body { padding: 2rem; }
+        .add-person-modal .field-group { margin-bottom: 1rem; }
+        .add-person-modal .btn-add-person { background: #10b981; border: none; padding: 0.8rem 2rem; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; transition: all 0.3s ease; width: 100%; font-size: 1rem; font-family: "Inter", "Segoe UI", Roboto, sans-serif; }
+        .add-person-modal .btn-add-person:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .add-person-modal .btn-add-person:active { transform: scale(0.97); }
+        .add-person-modal .btn-add-person:disabled { opacity: 0.6; cursor: not-allowed; }
+        .add-person-modal .error-msg { color: #dc2626; font-size: 0.8rem; margin-top: 0.3rem; display: none; }
+        .add-person-modal .error-msg.show { display: block; }
+
+        /* ===== CHART STYLES ===== */
+        .chart-filters { display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; padding: 0.8rem 1rem; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; align-items: center; margin-bottom: 1rem; }
+        .chart-filters .filter-group { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .chart-filters label { font-weight: 600; font-size: 0.7rem; color: #334155; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+        .chart-filters select, .chart-filters input { padding: 0.4rem 0.8rem; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.8rem; outline: none; background: white; transition: all 0.3s ease; min-width: 120px; }
+        .chart-filters select:focus, .chart-filters input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        .chart-filters .filter-btn { background: #2563eb; border: none; padding: 0.4rem 1.2rem; border-radius: 30px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.75rem; white-space: nowrap; }
+        .chart-filters .filter-btn:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+        .chart-filters .filter-btn:active { transform: scale(0.95); }
+        .chart-filters .filter-btn.reset-btn { background: #64748b; }
+        .chart-filters .filter-btn.reset-btn:hover { background: #475569; box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3); }
+        .chart-filters .filter-divider { width: 1px; height: 30px; background: #e2e8f0; margin: 0 0.2rem; }
+        .chart-type-selector { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+        .chart-type-selector label { font-weight: 600; font-size: 0.7rem; color: #334155; text-transform: uppercase; letter-spacing: 0.3px; }
+        .chart-type-selector button { padding: 0.3rem 0.9rem; border: 2px solid #cbd5e1; border-radius: 20px; background: white; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.3s ease; color: #475569; font-family: "Inter", sans-serif; }
+        .chart-type-selector button.active { border-color: #2563eb; background: #2563eb; color: white; }
+        .chart-type-selector button:hover { border-color: #2563eb; transform: translateY(-1px); }
+        .chart-type-selector button:active { transform: scale(0.95); }
+        .chart-container { position: relative; height: 480px; margin-top: 0.5rem; padding: 0.5rem 0; }
+        .chart-container canvas { width: 100% !important; height: 100% !important; }
+        .chart-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.6rem; margin-top: 1rem; padding: 0.8rem 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .chart-summary .stat-item { text-align: center; }
+        .chart-summary .stat-item .stat-value { font-size: 1.3rem; font-weight: 700; color: #1e3a8a; }
+        .chart-summary .stat-item .stat-label { font-size: 0.6rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.3px; }
+        .chart-loading { text-align: center; padding: 2rem; color: #94a3b8; }
+        .chart-loading i { font-size: 2rem; margin-bottom: 1rem; }
+
+        /* Wide modal for chart */
+        #chartModal .modal-box { max-width: 1280px; }
+
+        @media (max-width: 700px) {
+            .card { padding: 1.5rem; border-radius: 2rem; }
+            .form-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+            .full-width { grid-column: 1; }
+            .header h1 { font-size: 1.2rem; }
+            .header-icon { width: 42px; height: 42px; font-size: 1.2rem; }
+            .header-badge { display: none; }
+            .loading-logo { width: 140px; height: 140px; }
+            .loading-logo .logo-image { width: 60px; }
+            .btn-group { flex-direction: column; }
+            .pic-container { flex-direction: column; }
+            .pic-container select { width: 100%; }
+            .pic-btn { width: 100%; justify-content: center; }
+            .modal-box { max-width: 100vw; max-height: 98vh; border-radius: 16px; }
+            .modal-header { padding: 0.8rem 1rem; }
+            .modal-body { padding: 0 0.8rem; }
+            .table-wrapper { max-height: calc(92vh - 300px); }
+            .modal-body table { font-size: 0.55rem; min-width: 800px; }
+            .modal-body table th, .modal-body table td { padding: 0.15rem 0.15rem; }
+            .modal-footer { padding: 0.6rem 1rem; flex-direction: column; text-align: center; }
+            .modal-overlay { padding: 0.3rem; }
+            .chart-filters { flex-direction: column; align-items: stretch; }
+            .chart-filters select, .chart-filters input { min-width: 100%; }
+            .chart-filters .filter-divider { display: none; }
+            .chart-type-selector { flex-wrap: wrap; }
+            .chart-summary { grid-template-columns: repeat(3, 1fr); }
+            .chart-container { height: 380px; }
+            .toast-container { top: 10px; right: 10px; left: 10px; max-width: 100%; }
+        }
+        @media (max-width: 400px) {
+            .card { padding: 1rem; }
+            .field-group input, .field-group select, .field-group textarea { padding: 0.6rem 0.9rem; font-size: 0.85rem; }
+            .loading-logo { width: 100px; height: 100px; }
+            .loading-logo .logo-image { width: 45px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== LOADING OVERLAY ===== -->
+<div id="loadingOverlay">
+    <div class="loading-logo">
+        <img src="DHSUD_LOGO.png" alt="DHSUD Logo" class="logo-image" onerror="this.style.display='none'">
+        <div class="ring-container">
+            <svg viewBox="0 0 200 200">
+                <circle class="ring" cx="100" cy="100" r="80" />
+                <circle class="ring" cx="100" cy="100" r="60" />
+                <circle class="ring" cx="100" cy="100" r="40" />
+            </svg>
+        </div>
+    </div>
+    <div class="loading-text">
+        Loading <span>T.A HOUSING SUB.</span>
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="loading-progress"><div class="loading-progress-bar"></div></div>
+</div>
+
+<div class="card" id="mainCard">
+    <div class="header">
+        <div class="header-left">
+            <div class="header-logo">
+                <img src="DHSUD_LOGO.png" alt="DHSUD Logo" class="logo-image" onerror="this.style.display='none'">
+            </div>
+            <div>
+                <h1>
+                    T.A Housing Sub.
+                    <small>Technical Assistance Management Information System</small>
+                </h1>
+            </div>
+        </div>
+        <div class="header-badge">
+            <i class="fas fa-circle" style="font-size: 0.4rem; color: #00c896;"></i>
+            <span>Live</span>
+        </div>
+    </div>
+
+    <!-- ===== HOUSING SUB FORM ===== -->
+    <form id="housingSubForm">
+        <div class="form-grid">
+            <div class="field-group">
+                <label><i class="fas fa-hashtag"></i> PSGC <span class="required">*</span></label>
+                <input type="text" id="hs_psgc" placeholder="Auto-fills when city selected" readonly required>
+            </div>
+            <div class="field-group">
+                <label><i class="fas fa-map-pin"></i> Region <span class="required">*</span></label>
+                <select id="hs_region" required>
+                    <option value="Region_06">Region_06</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label><i class="fas fa-landmark"></i> Province <span class="required">*</span></label>
+                <select id="hs_province" required>
+                    <option value="">Select Province...</option>
+                    <option value="Aklan">Aklan</option>
+                    <option value="Antique">Antique</option>
+                    <option value="Capiz">Capiz</option>
+                    <option value="Guimaras">Guimaras</option>
+                    <option value="Iloilo">Iloilo</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label><i class="fas fa-city"></i> City/Municipality <span class="required">*</span></label>
+                <select id="hs_cityMun" required>
+                    <option value="">Select City/Municipality...</option>
+                </select>
+            </div>
+            <div class="field-group full-width">
+                <label><i class="fas fa-quote-right"></i> Query / TA Details <span class="required">*</span></label>
+                <textarea id="hs_queryDetails" placeholder="Describe the request or technical assistance..." rows="2" required></textarea>
+            </div>
+            <div class="field-group full-width">
+                <label><i class="fas fa-headset"></i> Type of Assistance Provided <span class="required">*</span></label>
+                <select id="hs_assistanceType" required>
+                    <option value="">Select Type of Assistance...</option>
+                    <option value="Assistance through online platform, telephone, and letter queries">Assistance through online platform, telephone, and letter queries</option>
+                    <option value="Assistance through on-field mentoring and coaching">Assistance through on-field mentoring and coaching</option>
+                    <option value="Assistance through the provision of orientations/briefings">Assistance through the provision of orientations/briefings</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label><i class="fas fa-clock"></i> Planned / Requested <span class="required">*</span></label>
+                <select id="hs_plannedRequested" required>
+                    <option value="">Select...</option>
+                    <option value="Planned">Planned</option>
+                    <option value="Requested">Requested</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label><i class="fas fa-calendar-alt"></i> Date Conducted (MM/DD/YYYY) <span class="required">*</span></label>
+                <input type="date" id="hs_dateConducted" required>
+            </div>
+            <div class="field-group">
+                <label><i class="fas fa-calendar-check"></i> Reporting Month <span class="required">*</span></label>
+                <select id="hs_reportingMonth" required>
+                    <option value="">Select Month...</option>
+                    <option value="January">January</option>
+                    <option value="February">February</option>
+                    <option value="March">March</option>
+                    <option value="April">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="August">August</option>
+                    <option value="September">September</option>
+                    <option value="October">October</option>
+                    <option value="November">November</option>
+                    <option value="December">December</option>
+                </select>
+            </div>
+            <div class="field-group full-width">
+                <label><i class="fas fa-pencil-alt"></i> Remarks</label>
+                <input type="text" id="hs_remarks" placeholder="N/A or additional notes">
+            </div>
+            <div class="field-group full-width">
+                <label><i class="fas fa-link"></i> Link to MOV</label>
+                <input type="url" id="hs_linkMov" placeholder="https://drive.google.com/...">
+            </div>
+            <div class="field-group full-width">
+                <label><i class="fas fa-user"></i> Personnel In-Charge <span class="required">*</span></label>
+                <div class="pic-container">
+                    <select id="hs_pic" required>
+                        <option value="">Select Person...</option>
+                    </select>
+                    <button type="button" class="pic-btn pic-btn-add" id="hs_addPic">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                    <button type="button" class="pic-btn pic-btn-delete" id="hs_deletePic">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn-submit" id="hs_submitBtn">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Save to Google Sheet (T.A Housing Sub.)</span>
+        </button>
+    </form>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button type="button" class="btn-test btn-view-all" id="viewAllBtn">
+            <i class="fas fa-database"></i> View All Records
+        </button>
+        <button type="button" class="btn-test btn-chart" id="chartBtn">
+            <i class="fas fa-chart-bar"></i> View Chart
+        </button>
+        <button type="button" class="btn-test btn-sheet" id="sheetBtn">
+            <i class="fas fa-external-link-alt"></i> View Google Sheet
+        </button>
+    </div>
+
+    <div id="statusMessage" class="status-message">
+        <i class="fas fa-info-circle"></i>
+        <span id="statusText">Ready · fill in all required fields</span>
+    </div>
+
+    <div class="footer-note">
+        <i class="fas fa-database"></i> Data saved directly to Google Sheets via Apps Script
+    </div>
+</div>
+
+<!-- ===== RECORDS MODAL ===== -->
+<div class="modal-overlay" id="recordsModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2><i class="fas fa-table"></i> <span id="recordsModalTitle">All Records</span></h2>
+            <button class="close-btn" id="closeModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="table-wrapper" id="tableWrapper">
+                <div id="modalBodyContent">
+                    <div style="text-align:center; padding: 2rem; color: #94a3b8;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                        <p style="margin-top: 1rem;">Loading records...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span class="record-count">Total: <span id="footerTotalCount">0</span> record(s)</span>
+            <button class="btn-close-modal" id="closeModalBtn2">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CHART MODAL ===== -->
+<div class="modal-overlay" id="chartModal">
+    <div class="modal-box" style="max-width: 1280px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-chart-bar"></i> <span id="chartModalTitle">Analytics Dashboard</span></h2>
+            <button class="close-btn" id="closeChartBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="chartModalBody">
+            <div class="chart-filters" style="border-bottom: none; margin-bottom: 0.5rem; background: transparent; padding: 0 0 0.5rem 0;">
+                <div class="chart-type-selector">
+                    <label>Chart Type:</label>
+                    <button class="active" data-chart="assistance">Type of Assistance</button>
+                    <button data-chart="planned">Planned/Requested</button>
+                    <button data-chart="city">By City/Municipality</button>
+                </div>
+            </div>
+            <div class="chart-filters">
+                <div class="filter-group">
+                    <label for="chartMonthFilter">Month:</label>
+                    <select id="chartMonthFilter">
+                        <option value="all">All Months</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="chartYearFilter">Year:</label>
+                    <input type="number" id="chartYearFilter" placeholder="e.g. 2026" style="width: 100px; min-width: 80px;">
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-group">
+                    <label for="chartPlannedFilter">Planned/Requested:</label>
+                    <select id="chartPlannedFilter">
+                        <option value="all">All</option>
+                        <option value="Planned">Planned</option>
+                        <option value="Requested">Requested</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="chartProvinceFilter">Province:</label>
+                    <select id="chartProvinceFilter">
+                        <option value="all">All Provinces</option>
+                        <option value="Aklan">Aklan</option>
+                        <option value="Antique">Antique</option>
+                        <option value="Capiz">Capiz</option>
+                        <option value="Guimaras">Guimaras</option>
+                        <option value="Iloilo">Iloilo</option>
+                    </select>
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-group">
+                    <label for="chartPICFilter">Personnel In-Charge:</label>
+                    <select id="chartPICFilter">
+                        <option value="all">All Personnel</option>
+                    </select>
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-group">
+                    <button class="filter-btn" id="applyChartFilter"><i class="fas fa-filter"></i> Apply</button>
+                    <button class="filter-btn reset-btn" id="resetChartFilter"><i class="fas fa-undo"></i> Reset</button>
+                </div>
+            </div>
+            <div id="chartContainer">
+                <div class="chart-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading chart data...</p>
+                </div>
+            </div>
+            <div id="chartSummary" class="chart-summary" style="display: none;">
+                <div class="stat-item"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Records</div></div>
+                <div class="stat-item"><div class="stat-value" id="statCategories">0</div><div class="stat-label">Categories</div></div>
+                <div class="stat-item"><div class="stat-value" id="statTopCategory">-</div><div class="stat-label">Top Category</div></div>
+                <div class="stat-item"><div class="stat-value" id="statMonths">0</div><div class="stat-label">Months</div></div>
+                <div class="stat-item"><div class="stat-value" id="statPlanned">0</div><div class="stat-label">Planned</div></div>
+                <div class="stat-item"><div class="stat-value" id="statRequested">0</div><div class="stat-label">Requested</div></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span class="record-count">📊 Analytics Dashboard</span>
+            <button class="btn-close-modal" id="closeChartBtn2">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ADD PERSON MODAL ===== -->
+<div class="modal-overlay add-person-modal" id="addPersonModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2><i class="fas fa-user-plus"></i> Add Person</h2>
+            <button class="close-btn" id="closeAddPersonBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>Full Name <span class="required">*</span></label>
+                <input type="text" id="newPersonName" placeholder="Enter full name..." style="padding: 0.75rem 1.1rem; border: 1.5px solid #cbd5e1; border-radius: 16px; font-size: 0.9rem; width: 100%; outline: none; font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;">
+                <div class="error-msg" id="personError">Please enter a name.</div>
+            </div>
+            <button class="btn-add-person" id="confirmAddPerson">
+                <i class="fas fa-check"></i> Add Person
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // TOAST NOTIFICATION SYSTEM
+    // ============================================
+    function showToast(title, message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-times-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+        
+        toast.innerHTML = `
+            <div class="toast-icon"><i class="fas ${icons[type] || icons.info}"></i></div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('hiding');
+            setTimeout(() => toast.remove(), 400);
+        }, duration);
+        
+        return toast;
+    }
+
+    // ============================================
+    // CONFIGURATION — REPLACE WITH YOUR NEW WEB APP URL
+    // ============================================
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbznwIA6-nZa_2uSyENfZq5dMqcggvElBLVE5z7BPKzT1Zu6NZRUQYh0OQMCJ_j0j4dr1A/exec';
+    const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1x3XKYjQ5eGz-sNQaBxrshM5F_uAS9j5zwcSXBmeUCK4/edit?usp=sharing';
+
+    // ============================================
+    // PERSONNEL IN-CHARGE DATA
+    // ============================================
+    let picNames = [];
+
+    async function loadPICNamesFromSheet() {
+        try {
+            const response = await fetch(WEB_APP_URL + '?action=getPIC', { method: 'GET' });
+            const result = await response.json();
+            if (result.result === 'success' && result.names) {
+                picNames = result.names;
+                populatePicDropdown();
+                updatePICFilters();
+                return picNames;
+            } else {
+                picNames = ['Juan Dela Cruz', 'Maria Santos', 'Jose Rizal', 'Andres Bonifacio', 'Gabriela Silang'];
+                populatePicDropdown();
+                updatePICFilters();
+                return picNames;
+            }
+        } catch (error) {
+            console.error('Error loading PIC names:', error);
+            picNames = ['Juan Dela Cruz', 'Maria Santos', 'Jose Rizal', 'Andres Bonifacio', 'Gabriela Silang'];
+            populatePicDropdown();
+            updatePICFilters();
+            return picNames;
+        }
+    }
+
+    async function savePICNamesToSheet(names) {
+        try {
+            const encodedNames = encodeURIComponent(JSON.stringify(names));
+            const url = WEB_APP_URL + '?action=savePIC&names=' + encodedNames;
+            await fetch(url, { method: 'GET', mode: 'no-cors' });
+            return true;
+        } catch (error) {
+            console.error('Error saving PIC names:', error);
+            return false;
+        }
+    }
+
+    function populatePicDropdown() {
+        const select = document.getElementById('hs_pic');
+        if (!select) return;
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">Select Person...</option>';
+        picNames.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+        if (currentValue && picNames.includes(currentValue)) {
+            select.value = currentValue;
+        }
+    }
+
+    function updatePICFilters() {
+        const chartPIC = document.getElementById('chartPICFilter');
+        if (chartPIC) {
+            const currentValue = chartPIC.value;
+            chartPIC.innerHTML = '<option value="all">All Personnel</option>';
+            picNames.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                chartPIC.appendChild(opt);
+            });
+            if (currentValue && picNames.includes(currentValue)) {
+                chartPIC.value = currentValue;
+            } else {
+                chartPIC.value = 'all';
+            }
+        }
+    }
+
+    // ============================================
+    // ADD PERSON MODAL
+    // ============================================
+    const addPersonModal = document.getElementById('addPersonModal');
+    const newPersonName = document.getElementById('newPersonName');
+    const personError = document.getElementById('personError');
+
+    function openAddPersonModal() {
+        newPersonName.value = '';
+        personError.classList.remove('show');
+        addPersonModal.classList.add('active');
+        setTimeout(() => newPersonName.focus(), 100);
+    }
+
+    function closeAddPersonModal() { addPersonModal.classList.remove('active'); }
+
+    document.getElementById('closeAddPersonBtn').addEventListener('click', closeAddPersonModal);
+    addPersonModal.addEventListener('click', function(e) {
+        if (e.target === addPersonModal) closeAddPersonModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeAddPersonModal();
+    });
+
+    document.getElementById('confirmAddPerson').addEventListener('click', async function() {
+        const name = newPersonName.value.trim();
+        if (!name) { personError.classList.add('show'); return; }
+        personError.classList.remove('show');
+        if (picNames.includes(name)) {
+            personError.textContent = 'This name already exists.';
+            personError.classList.add('show');
+            return;
+        }
+        picNames.push(name);
+        populatePicDropdown();
+        updatePICFilters();
+        await savePICNamesToSheet(picNames);
+        document.getElementById('hs_pic').value = name;
+        showToast('✅ Success', `"${name}" added to Personnel In-Charge list.`, 'success');
+        closeAddPersonModal();
+    });
+
+    newPersonName.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('confirmAddPerson').click();
+        }
+    });
+
+    // ============================================
+    // DELETE PERSON
+    // ============================================
+    async function deleteSelectedPerson() {
+        const select = document.getElementById('hs_pic');
+        const selectedName = select.value;
+        if (!selectedName) {
+            showToast('⚠️ Warning', 'Please select a person to delete.', 'warning');
+            return;
+        }
+        if (!confirm('Are you sure you want to remove "' + selectedName + '" from the list?')) { return; }
+        const index = picNames.indexOf(selectedName);
+        if (index > -1) {
+            picNames.splice(index, 1);
+            populatePicDropdown();
+            updatePICFilters();
+            await savePICNamesToSheet(picNames);
+            showToast('🗑️ Removed', `"${selectedName}" removed from Personnel In-Charge list.`, 'info');
+        }
+    }
+
+    // ============================================
+    // PSGC DATABASE
+    // ============================================
+    const psgcData = {
+        '600401000': { city: 'Altavas', province: 'Aklan' },
+        '600402000': { city: 'Balete', province: 'Aklan' },
+        '600403000': { city: 'Banga', province: 'Aklan' },
+        '600404000': { city: 'Batan', province: 'Aklan' },
+        '600405000': { city: 'Buruanga', province: 'Aklan' },
+        '600406000': { city: 'Ibajay', province: 'Aklan' },
+        '600407000': { city: 'Kalibo', province: 'Aklan' },
+        '600408000': { city: 'Lezo', province: 'Aklan' },
+        '600409000': { city: 'Libacao', province: 'Aklan' },
+        '600410000': { city: 'Madalag', province: 'Aklan' },
+        '600411000': { city: 'Makato', province: 'Aklan' },
+        '600412000': { city: 'Malay', province: 'Aklan' },
+        '600413000': { city: 'Malinao', province: 'Aklan' },
+        '600414000': { city: 'Nabas', province: 'Aklan' },
+        '600415000': { city: 'New Washington', province: 'Aklan' },
+        '600416000': { city: 'Numancia', province: 'Aklan' },
+        '600417000': { city: 'Tangalan', province: 'Aklan' },
+        '600601000': { city: 'Anini-y', province: 'Antique' },
+        '600602000': { city: 'Barbaza', province: 'Antique' },
+        '600603000': { city: 'Belison', province: 'Antique' },
+        '600604000': { city: 'Bugasong', province: 'Antique' },
+        '600605000': { city: 'Caluya', province: 'Antique' },
+        '600606000': { city: 'Culasi', province: 'Antique' },
+        '600607000': { city: 'Tobias Fornier', province: 'Antique' },
+        '600608000': { city: 'Hamtic', province: 'Antique' },
+        '600609000': { city: 'Laua-an', province: 'Antique' },
+        '600610000': { city: 'Libertad', province: 'Antique' },
+        '600611000': { city: 'Pandan', province: 'Antique' },
+        '600612000': { city: 'Patnongon', province: 'Antique' },
+        '600613000': { city: 'San Jose', province: 'Antique' },
+        '600614000': { city: 'San Remigio', province: 'Antique' },
+        '600615000': { city: 'Sebaste', province: 'Antique' },
+        '600616000': { city: 'Sibalom', province: 'Antique' },
+        '600617000': { city: 'Tibiao', province: 'Antique' },
+        '600618000': { city: 'Valderrama', province: 'Antique' },
+        '601901000': { city: 'Cuartero', province: 'Capiz' },
+        '601902000': { city: 'Dao', province: 'Capiz' },
+        '601903000': { city: 'Dumalag', province: 'Capiz' },
+        '601904000': { city: 'Dumarao', province: 'Capiz' },
+        '601905000': { city: 'Ivisan', province: 'Capiz' },
+        '601906000': { city: 'Jamindan', province: 'Capiz' },
+        '601907000': { city: 'Ma-ayon', province: 'Capiz' },
+        '601908000': { city: 'Mambusao', province: 'Capiz' },
+        '601909000': { city: 'Panay', province: 'Capiz' },
+        '601910000': { city: 'Panitan', province: 'Capiz' },
+        '601911000': { city: 'Pilar', province: 'Capiz' },
+        '601912000': { city: 'Pontevedra', province: 'Capiz' },
+        '601913000': { city: 'President Roxas', province: 'Capiz' },
+        '601914000': { city: 'City of Roxas', province: 'Capiz' },
+        '601915000': { city: 'Sapi-an', province: 'Capiz' },
+        '601916000': { city: 'Sigma', province: 'Capiz' },
+        '601917000': { city: 'Tapaz', province: 'Capiz' },
+        '607901000': { city: 'Buenavista', province: 'Guimaras' },
+        '607902000': { city: 'Jordan', province: 'Guimaras' },
+        '607903000': { city: 'Nueva Valencia', province: 'Guimaras' },
+        '607904000': { city: 'San Lorenzo', province: 'Guimaras' },
+        '607905000': { city: 'Sibunag', province: 'Guimaras' },
+        '603001000': { city: 'Ajuy', province: 'Iloilo' },
+        '603002000': { city: 'Alimodian', province: 'Iloilo' },
+        '603003000': { city: 'Anilao', province: 'Iloilo' },
+        '603004000': { city: 'Badiangan', province: 'Iloilo' },
+        '603005000': { city: 'Balasan', province: 'Iloilo' },
+        '603006000': { city: 'Banate', province: 'Iloilo' },
+        '603007000': { city: 'Barotac Nuevo', province: 'Iloilo' },
+        '603008000': { city: 'Barotac Viejo', province: 'Iloilo' },
+        '603009000': { city: 'Batad', province: 'Iloilo' },
+        '603010000': { city: 'Bingawan', province: 'Iloilo' },
+        '603012000': { city: 'Cabatuan', province: 'Iloilo' },
+        '603013000': { city: 'Calinog', province: 'Iloilo' },
+        '603014000': { city: 'Carles', province: 'Iloilo' },
+        '603015000': { city: 'Concepcion', province: 'Iloilo' },
+        '603016000': { city: 'Dingle', province: 'Iloilo' },
+        '603017000': { city: 'Dueñas', province: 'Iloilo' },
+        '603018000': { city: 'Dumangas', province: 'Iloilo' },
+        '603019000': { city: 'Estancia', province: 'Iloilo' },
+        '603020000': { city: 'Guimbal', province: 'Iloilo' },
+        '603021000': { city: 'Igbaras', province: 'Iloilo' },
+        '603023000': { city: 'Janiuay', province: 'Iloilo' },
+        '603025000': { city: 'Lambunao', province: 'Iloilo' },
+        '603026000': { city: 'Leganes', province: 'Iloilo' },
+        '603027000': { city: 'Lemery', province: 'Iloilo' },
+        '603028000': { city: 'Leon', province: 'Iloilo' },
+        '603029000': { city: 'Maasin', province: 'Iloilo' },
+        '603030000': { city: 'Miagao', province: 'Iloilo' },
+        '603031000': { city: 'Mina', province: 'Iloilo' },
+        '603032000': { city: 'New Lucena', province: 'Iloilo' },
+        '603034000': { city: 'Oton', province: 'Iloilo' },
+        '603035000': { city: 'City of Passi', province: 'Iloilo' },
+        '603036000': { city: 'Pavia', province: 'Iloilo' },
+        '603037000': { city: 'Pototan', province: 'Iloilo' },
+        '603038000': { city: 'San Dionisio', province: 'Iloilo' },
+        '603039000': { city: 'San Enrique', province: 'Iloilo' },
+        '603040000': { city: 'San Joaquin', province: 'Iloilo' },
+        '603041000': { city: 'San Miguel', province: 'Iloilo' },
+        '603042000': { city: 'San Rafael', province: 'Iloilo' },
+        '603043000': { city: 'Santa Barbara', province: 'Iloilo' },
+        '603044000': { city: 'Sara', province: 'Iloilo' },
+        '603045000': { city: 'Tigbauan', province: 'Iloilo' },
+        '603046000': { city: 'Tubungan', province: 'Iloilo' },
+        '603047000': { city: 'Zarraga', province: 'Iloilo' },
+        '631000000': { city: 'City of Iloilo', province: 'Iloilo' }
+    };
+
+    function getCitiesByProvince(province) {
+        const cities = [];
+        for (const [psgc, data] of Object.entries(psgcData)) {
+            if (data.province === province) {
+                cities.push({ psgc, city: data.city });
+            }
+        }
+        return cities.sort((a, b) => a.city.localeCompare(b.city));
+    }
+
+    // ============================================
+    // FORM LOGIC
+    // ============================================
+    const hsProvince = document.getElementById('hs_province');
+    const hsCity = document.getElementById('hs_cityMun');
+    const hsPsgc = document.getElementById('hs_psgc');
+
+    hsProvince.addEventListener('change', function() {
+        const province = this.value;
+        hsCity.innerHTML = '<option value="">Select City/Municipality...</option>';
+        if (!province) { hsPsgc.value = ''; return; }
+        const cities = getCitiesByProvince(province);
+        cities.forEach(({ psgc, city }) => {
+            const opt = document.createElement('option');
+            opt.value = psgc;
+            opt.textContent = city;
+            hsCity.appendChild(opt);
+        });
+        hsPsgc.value = '';
+    });
+
+    hsCity.addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        hsPsgc.value = selected && selected.value ? selected.value : '';
+        hsPsgc.style.borderColor = selected && selected.value ? '#10b981' : '#cbd5e1';
+    });
+
+    // ============================================
+    // FORMAT DATE
+    // ============================================
+    function formatDate(dateValue) {
+        if (!dateValue) return '-';
+        if (typeof dateValue === 'number') {
+            const d = new Date((dateValue - 25569) * 86400 * 1000);
+            return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear();
+        }
+        if (typeof dateValue === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)) return dateValue;
+        if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+            const p = dateValue.split('-');
+            return p[1] + '/' + p[2] + '/' + p[0];
+        }
+        if (dateValue instanceof Date) {
+            return String(dateValue.getMonth() + 1).padStart(2, '0') + '/' + String(dateValue.getDate()).padStart(2, '0') + '/' + dateValue.getFullYear();
+        }
+        try {
+            const d = new Date(dateValue);
+            if (!isNaN(d.getTime())) {
+                return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear();
+            }
+        } catch (e) {}
+        return dateValue || '-';
+    }
+
+    // ============================================
+    // FORM SUBMIT
+    // ============================================
+    document.getElementById('housingSubForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const getVal = (id) => document.getElementById(id).value.trim();
+        const getText = (id) => {
+            const sel = document.getElementById(id);
+            return sel.options[sel.selectedIndex]?.text || '';
+        };
+
+        const payload = {
+            formType: 'HOUSING_SUB',
+            psgc: getVal('hs_psgc'),
+            region: getVal('hs_region'),
+            province: getVal('hs_province'),
+            cityMun: getText('hs_cityMun'),
+            queryDetails: getVal('hs_queryDetails'),
+            assistanceType: getVal('hs_assistanceType'),
+            plannedRequested: getVal('hs_plannedRequested'),
+            dateConducted: getVal('hs_dateConducted'),
+            reportingMonth: getVal('hs_reportingMonth'),
+            remarks: getVal('hs_remarks') || 'N/A',
+            linkMov: getVal('hs_linkMov') || '',
+            personnelInCharge: getVal('hs_pic')
+        };
+
+        const required = ['psgc', 'province', 'cityMun', 'queryDetails', 'assistanceType', 'plannedRequested', 'dateConducted', 'reportingMonth', 'personnelInCharge'];
+        for (const field of required) {
+            if (!payload[field]) {
+                showToast('❌ Validation Error', 'Please fill in all required fields.', 'error');
+                return;
+            }
+        }
+
+        const btn = document.getElementById('hs_submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            showToast('✅ Success', 'Record saved to Google Sheet (T.A Housing Sub.)!', 'success');
+            this.reset();
+            document.getElementById('hs_dateConducted').value = new Date().toISOString().split('T')[0];
+            document.getElementById('hs_region').value = 'Region_06';
+            document.getElementById('hs_province').value = '';
+            document.getElementById('hs_cityMun').innerHTML = '<option value="">Select City/Municipality...</option>';
+            document.getElementById('hs_psgc').value = '';
+            document.getElementById('hs_pic').value = '';
+        } catch (error) {
+            showToast('❌ Error', 'Failed to save record: ' + error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span>Save to Google Sheet (T.A Housing Sub.)</span>';
+        }
+    });
+
+    // ============================================
+    // RECORDS MODAL
+    // ============================================
+    const recordsModal = document.getElementById('recordsModal');
+    const modalBodyContent = document.getElementById('modalBodyContent');
+    const footerTotalCount = document.getElementById('footerTotalCount');
+
+    function openRecordsModal() {
+        recordsModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('recordsModalTitle').textContent = 'T.A Housing Sub. Records';
+        loadRecords();
+    }
+
+    function closeRecordsModal() {
+        recordsModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeRecordsModal);
+    document.getElementById('closeModalBtn2').addEventListener('click', closeRecordsModal);
+    recordsModal.addEventListener('click', function(e) {
+        if (e.target === recordsModal) closeRecordsModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeRecordsModal();
+    });
+
+    async function loadRecords() {
+        modalBodyContent.innerHTML = `<div style="text-align:center; padding: 2rem; color: #94a3b8;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p style="margin-top: 1rem;">Loading records...</p></div>`;
+        try {
+            const response = await fetch(WEB_APP_URL + '?action=records&type=HOUSING_SUB', { method: 'GET' });
+            const result = await response.json();
+            if (result.result === 'success') {
+                const records = result.records || [];
+                renderTable(records);
+                footerTotalCount.textContent = records.length;
+            } else {
+                modalBodyContent.innerHTML = `<div style="text-align:center; padding: 2rem; color: #dc2626;">Error: ${result.message}</div>`;
+            }
+        } catch (error) {
+            modalBodyContent.innerHTML = `<div style="text-align:center; padding: 2rem; color: #dc2626;">Failed to load: ${error.message}</div>`;
+        }
+    }
+
+    function renderTable(records) {
+        if (!records || records.length === 0) {
+            modalBodyContent.innerHTML = `<table><thead><tr><th>#</th><th>PSGC</th><th>Region</th><th>Province</th><th>City/Municipality</th><th>Query/TA Details</th><th>Type of Assistance</th><th>Planned/Requested</th><th>Date Conducted</th><th>Reporting Month</th><th>Personnel</th></tr></thead><tbody><tr class="no-records"><td colspan="11">📭 No records found for T.A Housing Sub.</td></tr></tbody></table>`;
+            return;
+        }
+
+        const columns = [
+            { key: 'PSGC', label: 'PSGC' },
+            { key: 'Region', label: 'Region' },
+            { key: 'Province', label: 'Province' },
+            { key: 'City/Municipality', label: 'City/Municipality' },
+            { key: 'Query/TA Details', label: 'Query/TA Details' },
+            { key: 'Type of Assistance Provided', label: 'Type of Assistance' },
+            { key: 'Planned / Requested', label: 'Planned/Requested' },
+            { key: 'Date Conducted', label: 'Date Conducted' },
+            { key: 'Reporting Month', label: 'Reporting Month' },
+            { key: 'Personnel In-Charge', label: 'Personnel' }
+        ];
+
+        let html = `<table><thead><tr><th>#</th>`;
+        columns.forEach(col => html += `<th>${col.label}</th>`);
+        html += `</tr></thead><tbody>`;
+
+        records.forEach((record, index) => {
+            html += `<tr>`;
+            html += `<td style="text-align:center;">${index + 1}</td>`;
+            columns.forEach(col => {
+                let value = record[col.key] || '-';
+                if (col.key === 'Date Conducted') value = formatDate(value);
+                if (value.length > 25) value = value.substring(0, 25) + '…';
+                html += `<td>${value}</td>`;
+            });
+            html += `</tr>`;
+        });
+
+        html += `</tbody></table>`;
+        modalBodyContent.innerHTML = html;
+    }
+
+    // ============================================
+    // CHART MODAL
+    // ============================================
+    const chartModal = document.getElementById('chartModal');
+    let chartInstance = null;
+    let currentChartType = 'assistance';
+
+    function openChartModal() {
+        chartModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('chartModalTitle').textContent = 'T.A Housing Sub. Analytics Dashboard';
+        updatePICFilters();
+        loadChartData();
+    }
+
+    function closeChartModal() {
+        chartModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    }
+
+    document.getElementById('closeChartBtn').addEventListener('click', closeChartModal);
+    document.getElementById('closeChartBtn2').addEventListener('click', closeChartModal);
+    chartModal.addEventListener('click', function(e) {
+        if (e.target === chartModal) closeChartModal();
+    });
+
+    document.querySelectorAll('.chart-type-selector button').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.chart-type-selector button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentChartType = this.dataset.chart;
+            loadChartData();
+        });
+    });
+
+    async function loadChartData() {
+        const container = document.getElementById('chartContainer');
+        container.innerHTML = `<div class="chart-loading"><i class="fas fa-spinner fa-spin"></i><p>Loading chart data...</p></div>`;
+        document.getElementById('chartSummary').style.display = 'none';
+
+        try {
+            const response = await fetch(WEB_APP_URL + '?action=records&type=HOUSING_SUB', { method: 'GET' });
+            const result = await response.json();
+            if (result.result === 'success') {
+                const records = result.records || [];
+                renderChart(records);
+            } else {
+                container.innerHTML = `<div style="text-align:center; padding: 2rem; color: #dc2626;">Error loading data: ${result.message}</div>`;
+            }
+        } catch (error) {
+            container.innerHTML = `<div style="text-align:center; padding: 2rem; color: #dc2626;">Failed to load data: ${error.message}</div>`;
+        }
+    }
+
+    // Helper: shorten long labels for axis display
+    function shortLabel(label, maxLen = 30) {
+        if (!label) return '-';
+        if (label.length <= maxLen) return label;
+        return label.substring(0, maxLen) + '…';
+    }
+
+    function renderChart(records) {
+        const container = document.getElementById('chartContainer');
+        const summary = document.getElementById('chartSummary');
+
+        const monthFilter = document.getElementById('chartMonthFilter').value;
+        const yearFilter = document.getElementById('chartYearFilter').value;
+        const plannedFilter = document.getElementById('chartPlannedFilter').value;
+        const provinceFilter = document.getElementById('chartProvinceFilter').value;
+        const picFilter = document.getElementById('chartPICFilter')?.value || 'all';
+
+        let filtered = records;
+        if (monthFilter !== 'all') filtered = filtered.filter(r => (r['Reporting Month'] || '') === monthFilter);
+        if (yearFilter) filtered = filtered.filter(r => (r['Date Conducted'] || '').includes(yearFilter));
+        if (plannedFilter !== 'all') filtered = filtered.filter(r => (r['Planned / Requested'] || '') === plannedFilter);
+        if (provinceFilter !== 'all') filtered = filtered.filter(r => (r['Province'] || '') === provinceFilter);
+        if (picFilter !== 'all') filtered = filtered.filter(r => (r['Personnel In-Charge'] || '') === picFilter);
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding: 3rem; color: #94a3b8;"><i class="fas fa-chart-pie" style="font-size: 3rem; margin-bottom: 1rem;"></i><p>No data found for the selected filters.</p><p style="font-size: 0.85rem; margin-top: 0.5rem;">Try adjusting your filter criteria.</p></div>`;
+            summary.style.display = 'none';
+            return;
+        }
+
+        let plannedCount = filtered.filter(r => (r['Planned / Requested'] || '') === 'Planned').length;
+        let requestedCount = filtered.filter(r => (r['Planned / Requested'] || '') === 'Requested').length;
+        const months = new Set(filtered.map(r => r['Reporting Month']).filter(Boolean));
+
+        document.getElementById('statTotal').textContent = filtered.length;
+        document.getElementById('statPlanned').textContent = plannedCount;
+        document.getElementById('statRequested').textContent = requestedCount;
+        document.getElementById('statMonths').textContent = months.size;
+
+        let labels, data, chartTitle, datasetLabel;
+
+        if (currentChartType === 'assistance') {
+            const assistanceCounts = {};
+            const assistanceTypes = [
+                'Assistance through online platform, telephone, and letter queries',
+                'Assistance through on-field mentoring and coaching',
+                'Assistance through the provision of orientations/briefings'
+            ];
+            assistanceTypes.forEach(t => assistanceCounts[t] = 0);
+            filtered.forEach(r => {
+                const type = r['Type of Assistance Provided'] || 'Other';
+                if (assistanceCounts.hasOwnProperty(type)) assistanceCounts[type]++;
+                else assistanceCounts[type] = (assistanceCounts[type] || 0) + 1;
+            });
+            labels = Object.keys(assistanceCounts).filter(k => assistanceCounts[k] > 0);
+            data = labels.map(k => assistanceCounts[k]);
+            chartTitle = 'T.A Housing Sub. - Type of Assistance Distribution' + (monthFilter !== 'all' ? ' - ' + monthFilter : '') + (yearFilter ? ' - ' + yearFilter : '');
+            datasetLabel = 'Number of Requests';
+            document.getElementById('statCategories').textContent = labels.length;
+            let topCat = '-', topCount = 0;
+            labels.forEach((cat, i) => { if (data[i] > topCount) { topCount = data[i]; topCat = cat; } });
+            document.getElementById('statTopCategory').textContent = shortLabel(topCat, 25);
+            renderHorizontalBarChart(container, labels, data, chartTitle, datasetLabel);
+            summary.style.display = 'grid';
+            return;
+        } else if (currentChartType === 'planned') {
+            const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const plannedData = {}, requestedData = {};
+            monthOrder.forEach(m => { plannedData[m] = 0; requestedData[m] = 0; });
+            filtered.forEach(r => {
+                const month = r['Reporting Month'] || '';
+                const status = r['Planned / Requested'] || '';
+                if (status === 'Planned') plannedData[month] = (plannedData[month] || 0) + 1;
+                else if (status === 'Requested') requestedData[month] = (requestedData[month] || 0) + 1;
+            });
+            labels = monthOrder.filter(m => plannedData[m] > 0 || requestedData[m] > 0);
+            chartTitle = 'T.A Housing Sub. - Planned vs Requested by Month' + (yearFilter ? ' - ' + yearFilter : '');
+            document.getElementById('statCategories').textContent = '2 (Planned/Requested)';
+            document.getElementById('statTopCategory').textContent = plannedCount > requestedCount ? 'Planned (' + plannedCount + ')' : 'Requested (' + requestedCount + ')';
+            renderGroupedChart(container, labels, plannedData, requestedData, chartTitle);
+            summary.style.display = 'grid';
+            return;
+        } else if (currentChartType === 'city') {
+            const cityData = {};
+            filtered.forEach(r => {
+                const city = r['City/Municipality'] || 'Unknown';
+                cityData[city] = (cityData[city] || 0) + 1;
+            });
+            labels = Object.keys(cityData).sort((a, b) => cityData[b] - cityData[a]);
+            data = labels.map(k => cityData[k]);
+            chartTitle = 'T.A Housing Sub. - Requests by City/Municipality' + (monthFilter !== 'all' ? ' - ' + monthFilter : '') + (yearFilter ? ' - ' + yearFilter : '');
+            datasetLabel = 'Number of Requests';
+            document.getElementById('statCategories').textContent = labels.length;
+            let topCat = '-', topCount = 0;
+            labels.forEach((cat, i) => { if (data[i] > topCount) { topCount = data[i]; topCat = cat; } });
+            document.getElementById('statTopCategory').textContent = topCat + ' (' + topCount + ')';
+            renderHorizontalBarChart(container, labels, data, chartTitle, datasetLabel);
+            summary.style.display = 'grid';
+            return;
+        }
+    }
+
+    // ============================================
+    // HORIZONTAL BAR CHART (for long labels)
+    // ============================================
+    function renderHorizontalBarChart(container, labels, data, chartTitle, datasetLabel) {
+        const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#6366f1'];
+        const backgroundColors = labels.map((_, i) => colors[i % colors.length]);
+
+        // Dynamic height: at least 480px, grows with number of items
+        const dynamicHeight = Math.max(480, labels.length * 55 + 120);
+
+        container.innerHTML = `<div class="chart-container" style="height:${dynamicHeight}px;"><canvas id="chartCanvas"></canvas></div>`;
+        const ctx = document.getElementById('chartCanvas').getContext('2d');
+
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+        // Truncated axis labels but keep full in tooltip
+        const axisLabels = labels.map(l => shortLabel(l, 45));
+        const fullLabels = labels;
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: axisLabels,
+                datasets: [{
+                    label: datasetLabel,
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors.map(c => c + '99'),
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    barThickness: 32,
+                    maxBarThickness: 42
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { left: 10, right: 30, top: 10, bottom: 10 }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: chartTitle,
+                        font: { size: 16, weight: 'bold' },
+                        color: '#1e3a8a',
+                        padding: { top: 5, bottom: 15 }
+                    },
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                // Show the FULL label on hover
+                                return fullLabels[context[0].dataIndex];
+                            },
+                            label: function(context) {
+                                return context.parsed.x + ' request(s)';
+                            }
+                        },
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)'
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0, font: { size: 11 } },
+                        title: {
+                            display: true,
+                            text: 'Number of Requests',
+                            font: { weight: 'bold', size: 12 },
+                            color: '#1e3a8a'
+                        },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    y: {
+                        ticks: {
+                            font: { size: 11 },
+                            autoSkip: false,
+                            color: '#334155'
+                        },
+                        grid: { display: false }
+                    }
+                },
+                animation: {
+                    duration: 700,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+
+    // ============================================
+    // GROUPED VERTICAL BAR CHART (for Planned/Requested by month)
+    // ============================================
+    function renderGroupedChart(container, labels, plannedData, requestedData, chartTitle) {
+        container.innerHTML = `<div class="chart-container"><canvas id="chartCanvas"></canvas></div>`;
+        const ctx = document.getElementById('chartCanvas').getContext('2d');
+
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Planned',
+                        data: labels.map(m => plannedData[m] || 0),
+                        backgroundColor: '#2563eb',
+                        borderColor: '#2563eb99',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.6
+                    },
+                    {
+                        label: 'Requested',
+                        data: labels.map(m => requestedData[m] || 0),
+                        backgroundColor: '#f59e0b',
+                        borderColor: '#f59e0b99',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: chartTitle,
+                        font: { size: 16, weight: 'bold' },
+                        color: '#1e3a8a',
+                        padding: { top: 5, bottom: 15 }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: { font: { weight: 'bold', size: 12 }, usePointStyle: true, padding: 15 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + ' request(s)';
+                            }
+                        },
+                        padding: 12,
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0, font: { size: 11 } },
+                        title: {
+                            display: true,
+                            text: 'Number of Requests',
+                            font: { weight: 'bold', size: 12 },
+                            color: '#1e3a8a'
+                        },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: {
+                        ticks: { font: { size: 11 } },
+                        title: {
+                            display: true,
+                            text: 'Month',
+                            font: { weight: 'bold', size: 12 },
+                            color: '#1e3a8a'
+                        },
+                        grid: { display: false }
+                    }
+                },
+                animation: {
+                    duration: 700,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+
+    document.getElementById('applyChartFilter').addEventListener('click', loadChartData);
+    document.getElementById('resetChartFilter').addEventListener('click', function() {
+        document.getElementById('chartMonthFilter').value = 'all';
+        document.getElementById('chartYearFilter').value = new Date().getFullYear();
+        document.getElementById('chartPlannedFilter').value = 'all';
+        document.getElementById('chartProvinceFilter').value = 'all';
+        document.getElementById('chartPICFilter').value = 'all';
+        loadChartData();
+    });
+
+    // ============================================
+    // BUTTON EVENTS
+    // ============================================
+    document.getElementById('viewAllBtn').addEventListener('click', openRecordsModal);
+    document.getElementById('chartBtn').addEventListener('click', openChartModal);
+    document.getElementById('sheetBtn').addEventListener('click', function() {
+        window.open(GOOGLE_SHEET_URL, '_blank');
+        showToast('📊 Info', 'Opening Google Sheet in new tab...', 'info');
+    });
+
+    // ============================================
+    // PERSONNEL BUTTONS
+    // ============================================
+    document.getElementById('hs_addPic').addEventListener('click', openAddPersonModal);
+    document.getElementById('hs_deletePic').addEventListener('click', deleteSelectedPerson);
+
+    // ============================================
+    // INIT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('hs_dateConducted').value = today;
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        document.getElementById('hs_reportingMonth').value = monthNames[new Date().getMonth()];
+
+        document.getElementById('hs_region').value = 'Region_06';
+        document.getElementById('chartYearFilter').value = new Date().getFullYear();
+
+        loadPICNamesFromSheet();
+    });
+
+    setTimeout(function() {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        document.getElementById('mainCard').classList.add('visible');
+    }, 3000);
+</script>
+</body>
+</html>
